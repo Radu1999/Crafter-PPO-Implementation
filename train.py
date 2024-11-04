@@ -7,7 +7,17 @@ from env import Env, VectorizedEnv
 import pickle
 import torch.optim as optim
 from pathlib import Path
+import random
+import numpy as np
 
+
+def set_seed(seed):
+    torch.manual_seed(seed)
+    torch.cuda.manual_seed_all(seed)
+    np.random.seed(seed)
+    random.seed(seed)
+    torch.backends.cudnn.deterministic = True
+    torch.backends.cudnn.benchmark = False
 
 def _save_stats(episodic_returns, crt_step, path, logger=None):
     episodic_returns = torch.tensor(episodic_returns)
@@ -180,9 +190,17 @@ def get_options():
     parser.add_argument(
         "--wandb-key",
         type=str,
-        default="None",
+        default="",
         metavar="WANDB-KEY",
         help="Wandb key",
+    )
+
+    parser.add_argument(
+        "--seed",
+        type=int,
+        default=42,
+        metavar="SEED",
+        help="Random seed for reproducibility",
     )
 
     parser.add_argument(
