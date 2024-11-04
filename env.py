@@ -48,67 +48,36 @@ class VectorizedEnv:
         assert mode in ("train", "eval"), "`mode` argument can either be `train` or `eval`"
         self.device = args.device
         self.num_envs = num_envs
-        
-        self.envs = []
-        for _ in range(num_envs):
-            env = crafter.Env()
-            if mode == "train":
-                env = crafter.Recorder(
-                    env,
-                    pathlib.Path(args.logdir),
-                    save_stats=True,
-                    save_video=False,
-                    save_episode=False,
-                )
-            self.envs.append(env)
-        
+
+        # Initialize multiple instances of Env
+        self.envs = [Env(mode, args) for _ in range(num_envs)]
+
         self.action_space = self.envs[0].action_space
         self.observation_space = self.envs[0].observation_space
-        self.window = args.history_length
-        
-        self.state_buffers = [deque([], maxlen=args.history_length) for _ in range(num_envs)]
-        
+
     def reset(self):
-        
         observations = []
-        for env_idx in range(self.num_envs):
-            self.reset_buffer(env_idx)
-            obs = self.envs[env_idx].reset()
-            obs = torch.tensor(obs, dtype=torch.float32, device=self.device)
-            self.state_buffers[env_idx].append(obs)
-            observations.append(torch.stack(list(self.state_buffers[env_idx]), 0))
-        
+        for env in self.envs:
+            obs = env.reset()
+            observations.append(obs)
         return torch.stack(observations)  # Shape: [num_envs, window, 64, 64, 3]
-    
-    def reset_buffer(self, env_idx):
-        self.state_buffers[env_idx].clear()
-        for _ in range(self.window):
-            self.state_buffers[env_idx].append(
-                torch.zeros(64, 64, 3, device=self.device)
-            )
-            
+
     def step(self, actions):
         next_obs, rewards, dones, infos = [], [], [], []
-        
-        for env_idx, (env, action) in enumerate(zip(self.envs, actions)):
+
+        for env, action in zip(self.envs, actions):
             obs, reward, done, info = env.step(action.item())
-            
             if done:
                 obs = env.reset()
-                self.reset_buffer(env_idx)
                 info['episode_done'] = True
             else:
                 info['episode_done'] = False
-            
-            # Convert observation to tensor and update buffer
-            obs = torch.tensor(obs, dtype=torch.float32, device=self.device)
-            self.state_buffers[env_idx].append(obs)
-            
-            next_obs.append(torch.stack(list(self.state_buffers[env_idx]), 0))
+
+            next_obs.append(obs)
             rewards.append(reward)
             dones.append(done)
             infos.append(info)
-        
+
         return (
             torch.stack(next_obs),    # Shape: [num_envs, window, 64, 64, 3]
             torch.tensor(rewards, device=self.device),  # Shape: [num_envs]
