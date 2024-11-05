@@ -124,7 +124,7 @@ def main(opt):
                     episode_lengths[env_idx] = 0
                     ep_cnts[env_idx] += 1
 
-            iif (total_steps // num_envs) % (1000 // num_envs) == 0:
+            if (total_steps // num_envs) % (1000 // num_envs) == 0:
                 print(f"Steps: {total_steps}")
 
             if (total_steps // num_envs) % (opt.eval_interval // num_envs) == 0:
