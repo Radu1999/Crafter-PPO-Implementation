@@ -99,10 +99,12 @@ def main(opt):
 
     obs = env.reset()
     max_reward = 0
+    eval_interval = 0
 
     for update in range(opt.steps // (M * num_envs)):
         for step in range(M):
             total_steps += num_envs
+            eval_interval += num_envs
             actions, values = agent.act(obs)
             obs, rewards, dones, infos = env.step(actions)
             episode_rewards += rewards
@@ -124,10 +126,8 @@ def main(opt):
                     episode_lengths[env_idx] = 0
                     ep_cnts[env_idx] += 1
 
-            if (total_steps // num_envs) % (1000 // num_envs) == 0:
-                print(f"Steps: {total_steps}")
-
-            if (total_steps // num_envs) % (opt.eval_interval // num_envs) == 0:
+            if eval_interval >= opt.eval_interval:
+               eval_interval = 0
                eval_reward = eval_fn(agent, eval_env, total_steps, opt, logger=wandb)
                if eval_reward > max_reward:
                    max_reward = eval_reward

@@ -2,11 +2,6 @@ import torch.nn as nn
 import torch
 import timm
 from torchvision import transforms
-
-def add_gaussian_noise(actions, noise_std):
-    noise = np.random.normal(0, noise_std, size=actions.shape)
-    return actions + noise
-
 import torch.nn.functional as F
 
 class NoisyLinear(nn.Module):
@@ -46,7 +41,7 @@ class NoisyLinear(nn.Module):
             weight = self.weight_mu
             bias = self.bias_mu
         return F.linear(input, weight, bias)
-        
+
 
 class NN_Policy(nn.Module):
     def __init__(self, obs_space, action_space):
