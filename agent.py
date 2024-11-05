@@ -61,7 +61,7 @@ class PPOAgent(nn.Module):
                 returns,
                 advantages)
         
-        dataloader = torch.utils.data.DataLoader(dataset, batch_size=64, shuffle=True)
+        dataloader = torch.utils.data.DataLoader(dataset, batch_size=128, shuffle=True)
         self.policy.train()
         
         for _ in range(self.n_inner_epochs):

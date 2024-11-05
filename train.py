@@ -124,10 +124,10 @@ def main(opt):
                     episode_lengths[env_idx] = 0
                     ep_cnts[env_idx] += 1
 
-            if (update * M + step + 1) % 1000 == 0:
-                print(update * M + step + 1)
+            iif (total_steps // num_envs) % (1000 // num_envs) == 0:
+                print(f"Steps: {total_steps}")
 
-            if (update * M + step + 1) % opt.eval_interval == 0:
+            if (total_steps // num_envs) % (opt.eval_interval // num_envs) == 0:
                eval_reward = eval_fn(agent, eval_env, total_steps, opt, logger=wandb)
                if eval_reward > max_reward:
                    max_reward = eval_reward
