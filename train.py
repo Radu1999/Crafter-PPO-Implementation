@@ -79,7 +79,8 @@ def main(opt):
     _info(opt)
     wandb.login(key=opt.wandb_key)
     wandb.init(project="crafter")
-
+    set_seed(opt.seed)
+    
     opt.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     num_envs = opt.num_envs
     env = VectorizedEnv("train", opt, num_envs)
