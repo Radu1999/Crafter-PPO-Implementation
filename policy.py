@@ -67,8 +67,9 @@ class NN_Policy(nn.Module):
         self.policy_head = nn.Sequential(
             nn.Linear(feature_dim, 512),
             nn.Tanh(),
-            nn.Linear(256),
+            nn.Linear(256, 128),
             nn.Tanh(),
+            nn.Linear(128, action_space.n),
         )
 
         self.value_head = nn.Sequential(
