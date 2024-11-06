@@ -30,8 +30,7 @@ class PPOAgent(nn.Module):
         with torch.no_grad():
             action_logits, value = self.policy(obs)
 
-
-        action_distribution = Categorical(logits=action_logits.log())
+        action_distribution = Categorical(logits=action_logits)
         action = action_distribution.sample()
 
         if not self.eval:

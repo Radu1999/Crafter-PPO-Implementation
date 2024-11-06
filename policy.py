@@ -67,10 +67,16 @@ class NN_Policy(nn.Module):
         self.policy_head = nn.Sequential(
             nn.Linear(feature_dim, 512),
             nn.Tanh(),
-            nn.Linear(512, 256),
+            nn.Linear(512, 256), 
             nn.Tanh(),
             nn.Linear(256, action_space.n),
         )
+
+        for layer in self.policy_head:
+            if isinstance(layer, nn.Linear):
+                nn.init.xavier_uniform_(layer.weight)
+                nn.init.zeros_(layer.bias)
+
 
         self.value_head = nn.Sequential(
             nn.Linear(feature_dim, 1024),
@@ -87,10 +93,9 @@ class NN_Policy(nn.Module):
     def forward(self, x):
         
         N, F, H, W, C = x.shape 
-        reshaped_frames = x.permute(0, 4, 1, 2, 3).reshape(N, C, F * H, W) 
-        processed_frames = torch.stack([self.preprocess(frame) for frame in reshaped_frames])
-        processed_input = processed_frames.to(x.device)
-        encoding = self.encoder(processed_input)
+        reshaped_frames = x.permute(0, 4, 1, 2, 3).reshape(N, C, F * H, W)
+        processed_frames = torch.stack([self.preprocess(frame) for frame in reshaped_frames]).to(x.device)
+        encoding = self.encoder(processed_frames)
 
         action_probs = self.policy_head(encoding)
         values = self.value_head(encoding)
