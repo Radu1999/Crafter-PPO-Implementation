@@ -65,13 +65,10 @@ class NN_Policy(nn.Module):
 
         feature_dim = self.encoder.num_features
         self.policy_head = nn.Sequential(
-            NoisyLinear(feature_dim, 256),
-            nn.LayerNorm(256),
+            nn.Linear(feature_dim, 512),
             nn.Tanh(),
-            NoisyLinear(256, 128),
-            nn.LayerNorm(128),
+            nn.Linear(256),
             nn.Tanh(),
-            NoisyLinear(128, action_space.n),
         )
 
         self.value_head = nn.Sequential(

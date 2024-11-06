@@ -10,8 +10,8 @@ class PPOAgent(nn.Module):
 
         self.n_inner_epochs = 3
         self.clamp_margin = 0.3
-        self.entropy_coef = 0.05
-        self.entropy_decay = 0.90
+        self.entropy_coef = 0.5
+        self.entropy_decay = 0.95
         self.value_coef = 0.5
 
         self.log_probs_history = []
@@ -29,8 +29,9 @@ class PPOAgent(nn.Module):
         
         with torch.no_grad():
             action_logits, value = self.policy(obs)
- 
-        action_distribution = Categorical(logits=action_logits)
+
+
+        action_distribution = Categorical(logits=action_logits.log())
         action = action_distribution.sample()
 
         if not self.eval:
