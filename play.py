@@ -2,6 +2,7 @@ from env import Env
 from agent import PPOAgent
 from policy import NN_Policy
 import wandb
+import torch
 
 
 class opt:
@@ -20,6 +21,7 @@ done = False
 
 agent.policy.load_state_dict('best_model.pth')
 while not done:
-    action, value = agent.act(obs)
+    with torch.no_grad():
+        action, value = agent.act(obs)
     print(action)
     obs, reward, done, info = env.step(action)
