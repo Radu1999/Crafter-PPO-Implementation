@@ -18,7 +18,7 @@ class Env:
                 env,
                 pathlib.Path(args.logdir),
                 save_stats=True,
-                save_video=False,
+                save_video=args.save_video,
                 save_episode=False,
             )
         

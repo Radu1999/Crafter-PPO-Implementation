@@ -19,13 +19,15 @@ def set_seed(seed):
     torch.backends.cudnn.deterministic = True
     torch.backends.cudnn.benchmark = False
 
+
 def _save_stats(episodic_returns, crt_step, path, logger=None):
     episodic_returns = torch.tensor(episodic_returns)
     total_return = episodic_returns.sum().item()
     avg_return = episodic_returns.mean().item()
 
     if logger:
-        logger.log({"eval_avg_return": avg_return, "eval_total_return": total_return, "eval_std": episodic_returns.std().item()})
+        logger.log({"eval_avg_return": avg_return, "eval_total_return": total_return,
+                    "eval_std": episodic_returns.std().item()})
 
     print(
         "[{:06d}] eval results: R/ep={:03.2f} Total={:03.2f} std={:03.2f}.".format(
@@ -80,7 +82,7 @@ def main(opt):
     wandb.login(key=opt.wandb_key)
     wandb.init(project="crafter")
     set_seed(opt.seed)
-    
+
     opt.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     num_envs = opt.num_envs
     env = VectorizedEnv("train", opt, num_envs)
@@ -90,13 +92,11 @@ def main(opt):
     agent = PPOAgent(policy=policy, logger=wandb, device=opt.device).to(opt.device)
     optimizer = optim.Adam(agent.policy.parameters(), lr=opt.lr)
 
-
     ep_cnts = torch.zeros(num_envs, device=env.device)
     episode_rewards = torch.zeros(num_envs, device=env.device)
     episode_lengths = torch.zeros(num_envs, device=env.device)
     M = opt.rollout_size
     total_steps = 0
-
 
     obs = env.reset()
     max_reward = 0
@@ -128,12 +128,12 @@ def main(opt):
                     ep_cnts[env_idx] += 1
 
             if eval_interval >= opt.eval_interval:
-               eval_interval = 0
-               eval_reward = eval_fn(agent, eval_env, total_steps, opt, logger=wandb)
-               if eval_reward > max_reward:
-                   max_reward = eval_reward
-                   torch.save(agent.policy.state_dict(), opt.logdir + "/best_model.pth")
-        
+                eval_interval = 0
+                eval_reward = eval_fn(agent, eval_env, total_steps, opt, logger=wandb)
+                if eval_reward > max_reward:
+                    max_reward = eval_reward
+                    torch.save(agent.policy.state_dict(), opt.logdir + "/best_model.pth")
+
         for env_idx in range(num_envs):
             agent.terminated_history[-1][env_idx] = True
         agent.update(optimizer)
@@ -211,6 +211,11 @@ def get_options():
         metavar="NUM_ENVS",
         help="Number of parallel envs",
     )
+
+    parser.add_argument('--save-video',
+                        type=bool,
+                        default=False,
+                        help='Save video of the agent in action.')
 
     return parser.parse_args()
 
