@@ -183,7 +183,7 @@ def get_options():
     parser.add_argument(
         "--rollout-size",
         type=int,
-        default=32,
+        default=4096,
         metavar="M",
         help="Rollout size",
     )
@@ -207,7 +207,7 @@ def get_options():
     parser.add_argument(
         "--num-envs",
         type=int,
-        default=64,
+        default=1,
         metavar="NUM_ENVS",
         help="Number of parallel envs",
     )
