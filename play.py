@@ -19,7 +19,7 @@ agent = PPOAgent(policy=policy, logger=wandb, device=opt.device)
 obs = env.reset()
 done = False
 
-agent.policy.load_state_dict('best_model.pth')
+agent.policy.load_state_dict(torch.load('best_model.pth', weights_only=True))
 while not done:
     with torch.no_grad():
         action, value = agent.act(obs)
