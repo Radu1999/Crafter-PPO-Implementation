@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Basic configuration
-WANDB_KEY="93443c480bfbaa0b19be76d24f2efeb6be3319fd"
+WANDB_KEY=""
 BASE_DIR="logdir/ppo_agent"
 
 # Create base directory
